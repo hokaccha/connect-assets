@@ -31,12 +31,14 @@ module.exports = exports = (options = {}) ->
   options.detectChanges ?= process.env.NODE_ENV isnt 'production'
   options.minifyBuilds ?= true
   options.pathsOnly ?= false
+  options.preBuild ?= null
   libs.stylusExtends = options.stylusExtends ?= () => {};
 
   jsCompilers = extend jsCompilers, options.jsCompilers || {}
 
   connectAssets = module.exports.instance = new ConnectAssets options
   connectAssets.createHelpers options
+  connectAssets.preBuild()
   connectAssets.cache.middleware
 
 class ConnectAssets
@@ -264,6 +266,13 @@ class ConnectAssets
       path.join @options.src, route
     else
       path.join process.cwd(), @options.src, route
+
+  preBuild: ->
+    return unless @options.preBuild
+
+    for type, routes  of @options.preBuild
+      for i, route of routes
+        @options.helperContext[type] route
 
 # ## Asset compilers
 exports.cssCompilers = cssCompilers =
